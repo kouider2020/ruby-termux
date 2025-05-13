@@ -10,10 +10,10 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    #- name: Checkout source
-      #uses: actions/checkout@v3
-      #with:
-       # persist-credentials: false
+    - name: Checkout source
+      uses: actions/checkout@v
+      with:
+        persist-credentials: false
 
     - name: Install dependencies
       run: |
@@ -52,7 +52,7 @@ jobs:
         tar -czf ruby-2.4.3-linux.tar.gz ruby-2.4.3-install
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v
       with:
         name: ruby-2.4.3-linux
         path: ~/ruby-2.4.3-linux.tar.gz
