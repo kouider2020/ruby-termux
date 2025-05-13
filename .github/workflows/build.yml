@@ -47,7 +47,7 @@ jobs:
               > packages/ruby243/patches/fix-bigdecimal-clang11.patch
 
             ./build-package.sh -I ruby243
-            cp -v debs/*.deb /mnt/
+            cp -v debs/*.deb /mnt/ruby243.deb
           '
 
       - name: Upload built .deb package
