@@ -1,6 +1,8 @@
-name: Build Ruby 2.4.3 .deb for Termux
+name: Build Ruby 2.4.3
 
 on:
+  push:
+    branches: [ main ]
   workflow_dispatch:
 
 jobs:
@@ -8,43 +10,47 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout repository
-        uses: actions/checkout@v4
+    - name: Checkout source
+      uses: actions/checkout@v3
 
-      - name: Build in Termux Docker
-        run: |
-          docker run --rm -v "$PWD":/mnt ghcr.io/termux/package-builder bash -c '
-            set -e
-            cd /home/builder
-            git clone https://github.com/termux/termux-packages.git
-            cd termux-packages
-            mkdir -p packages/ruby243/patches
-            # Write build.sh
-            printf "%s\n" \
-              "TERMUX_PKG_HOMEPAGE=https://www.ruby-lang.org/" \
-              "TERMUX_PKG_DESCRIPTION=\"Ruby programming language v2.4.3\"" \
-              "TERMUX_PKG_LICENSE=\"BSD 2-Clause\"" \
-              "TERMUX_PKG_VERSION=2.4.3" \
-              "TERMUX_PKG_SRCURL=https://cache.ruby-lang.org/pub/ruby/2.4/ruby-\${TERMUX_PKG_VERSION}.tar.gz" \
-              "TERMUX_PKG_SHA256=fd0375582c92045aa7d31854e724471fb469e11a4b08ff334d39052ccaaa3a98" \
-              "TERMUX_PKG_DEPENDS=\"libffi, libgmp, gdbm, ncurses, readline, openssl, zlib\"" \
-              "TERMUX_PKG_EXTRA_CONFIGURE_ARGS=\"--enable-shared --with-opt-dir=\$TERMUX_PREFIX --disable-install-doc\"" \
-              "TERMUX_PKG_RM_AFTER_INSTALL=\"lib/ruby/2.4.0/rdoc\"" \
-              "TERMUX_PKG_BUILD_IN_SRC=true" \
-              > packages/ruby243/build.sh
-            printf "%s\n" \
-              "--- a/tool/generic_erb.rb" \
-              "+++ b/tool/generic_erb.rb" \
-              "@@" \
-              "-#!/usr/bin/env ruby" \
-              "+#!./ruby" \
-              > packages/ruby243/patches/fix-generic-erb.patch
-            ./build-package.sh -I ruby243
-            cp -v debs/*.deb /mnt/ruby243.deb
-          '
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          build-essential libreadline-dev zlib1g-dev libyaml-dev \
+          libffi-dev libgdbm-dev libncurses5-dev autoconf bison wget
 
-      - name: Upload .deb artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: ruby_2.4.3_armv8l
-          path: ruby243.deb
+    - name: Download and build OpenSSL 1.1.1
+      run: |
+        wget https://www.openssl.org/source/openssl-1.1.1w.tar.gz
+        tar -xf openssl-1.1.1w.tar.gz
+        cd openssl-1.1.1w
+        ./config --prefix=$HOME/openssl-1.1 --openssldir=$HOME/openssl-1.1
+        make -j$(nproc)
+        make install
+
+    - name: Download and extract Ruby 2.4.3
+      run: |
+        wget https://cache.ruby-lang.org/pub/ruby/2.4/ruby-2.4.3.tar.gz
+        tar -xf ruby-2.4.3.tar.gz
+
+    - name: Build Ruby with OpenSSL 1.1
+      run: |
+        cd ruby-2.4.3
+        export LDFLAGS="-L$HOME/openssl-1.1/lib"
+        export CPPFLAGS="-I$HOME/openssl-1.1/include"
+        export PKG_CONFIG_PATH="$HOME/openssl-1.1/lib/pkgconfig"
+        ./configure --prefix=$HOME/ruby-2.4.3-install --disable-install-doc --with-openssl-dir=$HOME/openssl-1.1 --with-out-ext=etc
+        make -j$(nproc)
+        make install
+
+    - name: Archive Ruby build
+      run: |
+        cd $HOME
+        tar -czf ruby-2.4.3-linux.tar.gz ruby-2.4.3-install
+
+    - name: Upload artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ruby-2.4.3-linux
+        path: ~/ruby-2.4.3-linux.tar.gz
