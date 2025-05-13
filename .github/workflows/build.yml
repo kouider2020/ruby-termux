@@ -12,6 +12,8 @@ jobs:
     steps:
     - name: Checkout source
       uses: actions/checkout@v3
+      with:
+        persist-credentials: false
 
     - name: Install dependencies
       run: |
@@ -50,7 +52,7 @@ jobs:
         tar -czf ruby-2.4.3-linux.tar.gz ruby-2.4.3-install
 
     - name: Upload artifact
-      uses: actions/upload-artifact@v3.1.3
+      uses: actions/upload-artifact@v3.1.3@sha256:4d6b3ec1f1d5b2939be5c40e525e478f46de55aa9be57b71d72c5f7f60a1442c
       with:
         name: ruby-2.4.3-linux
         path: ~/ruby-2.4.3-linux.tar.gz
