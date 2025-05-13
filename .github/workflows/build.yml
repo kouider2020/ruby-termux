@@ -40,30 +40,6 @@ jobs:
               "-#!/usr/bin/env ruby" \
               "+#!./ruby" \
               > packages/ruby243/patches/fix-generic-erb.patch
-
-            # Patch 1: Fix bigdecimal.c (rb_funcall + wrong declaration)
-            printf "%s\n" \
-              "--- a/ext/bigdecimal/bigdecimal.c" \
-              "+++ b/ext/bigdecimal/bigdecimal.c" \
-              "@@" \
-              "-static VALUE rb_rational_den(VALUE rat)" \
-              "+static VALUE" \
-              "+rb_rational_den(VALUE rat)" \
-              " {" \
-              "-    return rb_funcall(rat, rb_intern(\"denominator\"));" \
-              "+    return rb_funcall(rat, rb_intern(\"denominator\"), 0);" \
-              " }" \
-              > packages/ruby243/patches/fix-bigdecimal-clang.patch
-
-            # Patch 2: Fix generic_erb.rb to use ./ruby, not /usr/bin/ruby
-            printf "%s\n" \
-              "--- a/tool/generic_erb.rb" \
-              "+++ b/tool/generic_erb.rb" \
-              "@@" \
-              "-#!/usr/bin/env ruby" \
-              "+#!./ruby" \
-              > packages/ruby243/patches/fix-generic-erb.patch
-
             ./build-package.sh -I ruby243
             cp -v debs/*.deb /mnt/ruby243.deb
           '
