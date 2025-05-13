@@ -33,6 +33,13 @@ jobs:
               "TERMUX_PKG_RM_AFTER_INSTALL=\"lib/ruby/2.4.0/rdoc\"" \
               "TERMUX_PKG_BUILD_IN_SRC=true" \
               > packages/ruby243/build.sh
+            printf "%s\n" \
+              "--- a/tool/generic_erb.rb" \
+              "+++ b/tool/generic_erb.rb" \
+              "@@" \
+              "-#!/usr/bin/env ruby" \
+              "+#!./ruby" \
+              > packages/ruby243/patches/fix-generic-erb.patch
 
             # Patch 1: Fix bigdecimal.c (rb_funcall + wrong declaration)
             printf "%s\n" \
