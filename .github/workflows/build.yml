@@ -26,7 +26,7 @@ jobs:
               "TERMUX_PKG_LICENSE=\"BSD 2-Clause\"" \
               "TERMUX_PKG_VERSION=2.4.3" \
               "TERMUX_PKG_SRCURL=https://cache.ruby-lang.org/pub/ruby/2.4/ruby-\${TERMUX_PKG_VERSION}.tar.gz" \
-              "TERMUX_PKG_SHA256=fd037caa21c29c9a4fe5449c508412f85132f2e3fc7fae4536ab890f4ce7b092" \
+              "TERMUX_PKG_SHA256=fd0375582c92045aa7d31854e724471fb469e11a4b08ff334d39052ccaaa3a98" \
               "TERMUX_PKG_DEPENDS=\"libffi, libgmp, gdbm, ncurses, readline, openssl, zlib\"" \
               "TERMUX_PKG_EXTRA_CONFIGURE_ARGS=\"--enable-shared --with-opt-dir=\$TERMUX_PREFIX --disable-install-doc\"" \
               "TERMUX_PKG_RM_AFTER_INSTALL=\"lib/ruby/2.4.0/rdoc\"" \
