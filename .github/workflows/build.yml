@@ -19,7 +19,6 @@ jobs:
             git clone https://github.com/termux/termux-packages.git
             cd termux-packages
             mkdir -p packages/ruby243/patches
-
             # Write build.sh
             printf "%s\n" \
               "TERMUX_PKG_HOMEPAGE=https://www.ruby-lang.org/" \
