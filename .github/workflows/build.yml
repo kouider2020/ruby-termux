@@ -1,0 +1,57 @@
+name: Build Ruby 2.4.3 .deb for Termux
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Build in Termux Docker
+        run: |
+          docker run --rm -v "$PWD":/mnt ghcr.io/termux/package-builder bash -c '
+            set -e
+            cd /home/builder
+            git clone https://github.com/termux/termux-packages
+            cd termux-packages
+            mkdir -p packages/ruby243/patches
+
+            cat > packages/ruby243/build.sh <<"EOF"
+TERMUX_PKG_HOMEPAGE=https://www.ruby-lang.org/
+TERMUX_PKG_DESCRIPTION="Ruby programming language v2.4.3"
+TERMUX_PKG_LICENSE="BSD 2-Clause"
+TERMUX_PKG_VERSION=2.4.3
+TERMUX_PKG_SRCURL=https://cache.ruby-lang.org/pub/ruby/2.4/ruby-${TERMUX_PKG_VERSION}.tar.gz
+TERMUX_PKG_SHA256=fd037caa21c29c9a4fe5449c508412f85132f2e3fc7fae4536ab890f4ce7b092
+TERMUX_PKG_DEPENDS="libffi, libgmp, libgdbm, ncurses, readline, openssl, zlib"
+TERMUX_PKG_EXTRA_CONFIGURE_ARGS="--enable-shared --with-opt-dir=$TERMUX_PREFIX --disable-install-doc"
+TERMUX_PKG_RM_AFTER_INSTALL="lib/ruby/2.4.0/rdoc"
+TERMUX_PKG_BUILD_IN_SRC=true
+EOF
+
+            cat > packages/ruby243/patches/fix-bigdecimal-clang11.patch <<"EOF"
+--- a/ext/bigdecimal/bigdecimal.c
++++ b/ext/bigdecimal/bigdecimal.c
+@@
+-static VALUE rb_rational_den(VALUE rat)
++static VALUE
++rb_rational_den(VALUE rat)
+ {
+-    return rb_funcall(rat, rb_intern("denominator"));
++    return rb_funcall(rat, rb_intern("denominator"), 0);
+ }
+EOF
+
+            ./build-package.sh -I ruby243
+            cp -v debs/*.deb /mnt/
+          '
+
+      - name: Upload built .deb package
+        uses: actions/upload-artifact@v4
+        with:
+          name: ruby_2.4.3_armv8l
+          path: ./*.deb
