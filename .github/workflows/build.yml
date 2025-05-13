@@ -11,9 +11,9 @@ jobs:
 
     steps:
     - name: Checkout source
-      uses: actions/checkout@v3
-      with:
-        persist-credentials: false
+      #uses: actions/checkout@v3
+      #with:
+       # persist-credentials: false
 
     - name: Install dependencies
       run: |
