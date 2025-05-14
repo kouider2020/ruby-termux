@@ -1,0 +1,32 @@
+name: Onodo CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  onodo-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Onodo repository
+        uses: actions/checkout@v4
+        with:
+          repository: civio/onodo
+          path: onodo
+
+      - name: Set up Docker Compose
+        run: |
+          cd onodo
+          docker compose build
+
+      - name: Set up database
+        run: |
+          cd onodo
+          docker compose run --rm onodo bundle exec rake db:create db:migrate db:seed
+
+      - name: Run tests
+        run: |
+          cd onodo
+          docker compose run --rm onodo bundle exec rspec
